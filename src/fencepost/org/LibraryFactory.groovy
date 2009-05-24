@@ -2,6 +2,7 @@ package fencepost.org
 
 import groovy.util.Proxy
 
+import com.sun.jna.Library
 import com.sun.jna.NativeLibrary
 
 /**
@@ -12,6 +13,7 @@ class LibraryFactory {
 
 	def getLibrary() {
 
+        /* Create the lib first so that it's in scope when the closure is declared */
         def lib = NativeLibrary.getInstance("c")
 
         ExpandoMetaClass emc = new ExpandoMetaClass(NativeLibrary)
@@ -19,9 +21,8 @@ class LibraryFactory {
 
             String fname, fargs ->
                 println "Invoking method name ${fname}, args: ${fargs}"
-            def f = lib.getFunction(fname)
-            fname == "getpid" ? f.invokeInt(fargs) : f.invoke(fargs)
-            //lib.getFunction(fname).invoke(fargs)
+                def f = lib.getFunction(fname)
+                fname == "getpid" ? f.invokeInt(fargs) : f.invoke(fargs)
         }
         emc.initialize()
 
