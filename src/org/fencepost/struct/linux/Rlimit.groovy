@@ -1,4 +1,4 @@
-package org.fencepost.structs.linux
+package org.fencepost.struct.linux
 
 import com.sun.jna.Structure
 
@@ -6,7 +6,7 @@ import com.sun.jna.Structure
  *
  * @author mersault
  */
-class rlimit extends Structure {
+class Rlimit extends Structure {
 
       public int curr
       public int max
