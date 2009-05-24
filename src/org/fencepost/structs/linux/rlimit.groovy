@@ -1,4 +1,4 @@
-package fencepost.org.structs.linux
+package org.fencepost.structs.linux
 
 import com.sun.jna.Structure
 

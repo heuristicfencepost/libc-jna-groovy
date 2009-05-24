@@ -1,4 +1,4 @@
-package fencepost.org
+package org.fencepost
 
 /**
  *
