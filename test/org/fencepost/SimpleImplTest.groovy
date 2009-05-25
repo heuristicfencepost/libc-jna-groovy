@@ -6,12 +6,13 @@ import com.sun.jna.Library
 import com.sun.jna.NativeLibrary
 
 import org.fencepost.struct.linux.Rlimit
+import org.fencepost.struct.linux.Utsname
 
 /**
  * Test of a simple implementation of adding support for arbitrary calls to libc
  * when using JNA.
  *
- * @author mersault
+ * @author h.fencepost
  */
 class SimpleImplTest extends GroovyTestCase {
 
@@ -40,20 +41,30 @@ class SimpleImplTest extends GroovyTestCase {
                 }
                 else {
 
-                    /* Standard libc convention is to return an integer with a value of
-                    zero if the call was successful and some non-zero value otherwise.  If
-                    a non-zero value is returned errno is set appropriately. */
+                    /* Standard libc calling convention depends on the syscall involved.
+                     * Some syscalls are useful only for their side effects (i.e. setting
+                     * a value or set of values in some input struct); these return 0 on
+                     * success and -1 (with errno set appropriately) on failure.  Other
+                     * syscalls return a value that has some meaning; open() returns
+                     * the new file descriptor, fork() returns the child PID in the
+                     * parent etc.  Errors in these calls are also marked by a return
+                     * value of -1 and a correct value for errno.
+                     *
+                     * We can cover both cases by checking for -1 in the return value
+                     * and returning that value if it's anything else.  If the call is
+                     * useful only for it's side effects this return value can be safely
+                     * ignored. */
                     synchronized (libc) {
 
                         def rv = f.invokeInt(fargs)
-                        if (rv == 0) { return rv }
-                        else {
+                        if (rv == -1) {
 
                             def errnoptr = libc.getGlobalVariableAddress("errno")
                             def errno = errnoptr.getInt(0)
                             def errstr = libc.getFunction("strerror").invokeString([errno] as Object[],false)
                             throw new LibcException(errno,errstr)
                         }
+                        else { return rv }
                     }
 
                 }
@@ -97,6 +108,12 @@ class SimpleImplTest extends GroovyTestCase {
             println "Hit exception (expected): ${le}"
             assert true
         }
+
+        def utsname = new Utsname()
+        rv = libcproxy.uname(utsname)
+        println "utsname sysname: ${new String(utsname.sysname)}"
+        println "utsname release: ${new String(utsname.release)}"
+        println "utsname version: ${new String(utsname.version)}"
     }
 }
 

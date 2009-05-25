@@ -4,7 +4,7 @@ package org.fencepost
  * Representation of an "error" (usually a non-zero return value) to some
  * libc call.  Should contain a value for errno.
  *
- * @author mersault
+ * @author h.fencepost
  */
 class LibcException extends Exception {
 
