@@ -2,6 +2,7 @@ package org.fencepost
 
 import groovy.util.Proxy
 
+import com.sun.jna.Function
 import com.sun.jna.Library
 import com.sun.jna.NativeLibrary
 
@@ -23,7 +24,7 @@ class SimpleImplTest extends GroovyTestCase {
 
         /* We do not wish to register this meta-class; other instances of NativeLibrary
         may wish to do things differently. */
-        ExpandoMetaClass emc = new ExpandoMetaClass(NativeLibrary,false)
+        ExpandoMetaClass emc = new ExpandoMetaClass(Proxy,false)
         emc.methodMissing = {
 
             String fname, fargs ->
@@ -108,6 +109,11 @@ class SimpleImplTest extends GroovyTestCase {
             println "Hit exception (expected): ${le}"
             assert true
         }
+
+        /* Verify that NativeLibrary methods are still accessible */
+        def func = libcproxy.adaptee.getFunction("fork")
+        assert func != null
+        assert func instanceof Function
 
         def utsname = new Utsname()
         rv = libcproxy.uname(utsname)
