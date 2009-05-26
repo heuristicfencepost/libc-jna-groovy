@@ -17,7 +17,7 @@ import org.fencepost.struct.linux.Utsname
  */
 class SimpleImplTest extends GroovyTestCase {
 
-    void testExample1() {
+    void testSimple() {
 
         /* Create the lib first so that it's in scope when the closure is declared */
         def libc = NativeLibrary.getInstance("c")
@@ -67,7 +67,6 @@ class SimpleImplTest extends GroovyTestCase {
                         }
                         else { return rv }
                     }
-
                 }
         }
         emc.initialize()
@@ -115,6 +114,7 @@ class SimpleImplTest extends GroovyTestCase {
         assert func != null
         assert func instanceof Function
 
+        /* One more function call, just for fun */
         def utsname = new Utsname()
         rv = libcproxy.uname(utsname)
         println "utsname sysname: ${new String(utsname.sysname)}"
