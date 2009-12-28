@@ -10,7 +10,7 @@ import com.sun.jna.ptr.IntByReference
  * a bit of Groovy.
  *
  * Verified with:
- * Groovy 1.6.5 (Java 1.6.0_16)
+ * Groovy 1.7.0 (Java 1.6.0_16)
  * JNA 3.2.4
  * Ubuntu 9.10
  * 
@@ -42,7 +42,7 @@ class ForkTest extends GroovyTestCase {
             /* On some platforms we have to make our threads sleep for a small amount of time
                before waiting on the child to complete.  It's not logically required for the
                code to work; perhaps a constraint of JNA performance? */
-            Thread.sleep(100)
+            sleep 200
             def iref = new IntByReference()
             def pid = groovylibc.wait(iref)
             println "Child ${forkval} exited with status ${iref.value}"
