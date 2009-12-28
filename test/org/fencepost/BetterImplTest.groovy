@@ -10,8 +10,12 @@ import org.fencepost.struct.linux.Rlimit
 import org.fencepost.struct.linux.Utsname
 
 /**
- * Test of a somewhat better implementation of handling calls to libc functions
- * from within Groovy using JNA.
+ * Test of a better implementation of calling glibc using JNA.
+ *
+ * Verified with:
+ * Groovy 1.6.5 (Java 1.6.0_16)
+ * JNA 3.2.4
+ * Ubuntu 9.10
  *
  * @author h.fencepost
  */
@@ -19,11 +23,9 @@ class BetterImplTest extends GroovyTestCase {
 
     void testBetter() {
 
-        /* Create the lib first so that it's in scope when the closure is declared */
-        def libc = NativeLibrary.getInstance("c")
-        def groovylibc = new GroovyLibc(libc)
+        def groovylibc = new GroovyLibc()
 
-        /* Test a few functions which don't follow the normal libc calling convention */
+        /* Test a few functions which do not have side effects */
         def pid = groovylibc.getpid()
         println "PID: ${pid}}"
         assert pid > 0
@@ -36,19 +38,26 @@ class BetterImplTest extends GroovyTestCase {
         println "GID: ${gid}"
         assert gid > 0
 
-        /* Check a function which does follow the calling convention */
+        /* Test a few functions that have side effects.  7 is the integer value
+         * for RLIMIT_NOFILE on Linux */
         def rlimit = new Rlimit()
-        /* RLIMIT_NOFILE = 7 on Linux */
         def rv = groovylibc.getrlimit(7,rlimit)
         println "rlimit: ${rlimit}"
         assert rlimit.curr > 0
         assert rlimit.max > 0
 
-        /* Check a function which follows the convention while inducing an error */
+        def utsname = new Utsname()
+        rv = groovylibc.uname(utsname)
+        println "utsname sysname: ${new String(utsname.sysname)}"
+        println "utsname release: ${new String(utsname.release)}"
+        println "utsname version: ${new String(utsname.version)}"
+
+        /* Another check for a function with side effects, this time with parameters
+         * which should induce an error (700 is well outside the list of acceptable
+         * resources for getrlimit() */
         try {
 
             rlimit = new Rlimit()
-            /* 700 is well outside the list of acceptable resources for getrlimit */
             rv = groovylibc.getrlimit(700,rlimit)
             assert false
         }
@@ -69,13 +78,6 @@ class BetterImplTest extends GroovyTestCase {
             println "Hit exception (expected): ${mpe}"
             assert true
         }
-
-        /* One more function call, just for fun */
-        def utsname = new Utsname()
-        rv = groovylibc.uname(utsname)
-        println "utsname sysname: ${new String(utsname.sysname)}"
-        println "utsname release: ${new String(utsname.release)}"
-        println "utsname version: ${new String(utsname.version)}"
     }
 }
 

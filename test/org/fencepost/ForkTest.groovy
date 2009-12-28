@@ -9,20 +9,28 @@ import com.sun.jna.ptr.IntByReference
  * Proof-of-concept to illustrate how much fun forking can be with just
  * a bit of Groovy.
  *
+ * Verified with:
+ * Groovy 1.6.5 (Java 1.6.0_16)
+ * JNA 3.2.4
+ * Ubuntu 9.10
+ * 
  * @author h.fencepost
  */
 class ForkTest extends GroovyTestCase {
 
     void testFork() {
         
-        def libc = NativeLibrary.getInstance("c")
-        def groovylibc = new GroovyLibc(libc)
+        def groovylibc = new BetterGroovyLibc()
 
-        /* Parent gets the PID, child gets zero */
-        /* Note that vfork() does not work here (at least for Linux), presumably
-           because of the sharing of resources. */
+        /* Parent gets the PID, child gets zero
+         *
+         * Note that vfork() does not work here (at least for Linux), presumably
+         * because of the sharing of resources. */
         def forkval = groovylibc.fork()
+        println "forkval: ${forkval}"
         if (forkval == 0) {
+
+            println "execlp() in child, PID: ${forkval}"
 
             /* Would you like to use PATH?  Both calls below should work (assuming
                an install of vim at /usr/bin) */
@@ -31,6 +39,10 @@ class ForkTest extends GroovyTestCase {
         }
         else {
 
+            /* On some platforms we have to make our threads sleep for a small amount of time
+               before waiting on the child to complete.  It's not logically required for the
+               code to work; perhaps a constraint of JNA performance? */
+            Thread.sleep(100)
             def iref = new IntByReference()
             def pid = groovylibc.wait(iref)
             println "Child ${forkval} exited with status ${iref.value}"
