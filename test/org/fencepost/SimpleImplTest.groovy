@@ -12,6 +12,11 @@ import org.fencepost.struct.linux.Utsname
 /**
  * Test of a simple implementation of calling glibc using JNA.
  *
+ * Verified with:
+ * Groovy 1.6.5 (Java 1.6.0_16)
+ * JNA 3.2.4
+ * Ubuntu 9.10
+ *
  * @author h.fencepost
  */
 class SimpleImplTest extends GroovyTestCase {
